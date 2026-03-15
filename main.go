@@ -17,6 +17,8 @@ var rootCmd = &cobra.Command{
     },
 }
 
+var suitesRoot = "suites"
+
 func init() {
     rootCmd.AddCommand(initCmd)
     rootCmd.AddCommand(runCmd)
@@ -32,19 +34,30 @@ var initCmd = &cobra.Command{
     Args:  cobra.ExactArgs(1),
     Run: func(cmd *cobra.Command, args []string) {
         name := args[0]
-        suiteDir := filepath.Join("evals", name)
-        if err := os.MkdirAll(suiteDir, 0o755); err != nil {
-            fmt.Fprintf(os.Stderr, "failed to create suite directory: %v\n", err)
+        suiteDir := filepath.Join(suitesRoot, name)
+        fixturesDir := filepath.Join(suiteDir, "fixtures")
+        if err := os.MkdirAll(fixturesDir, 0o755); err != nil {
+            fmt.Fprintf(os.Stderr, "failed to create suite directories: %v\n", err)
             os.Exit(1)
         }
-        readme := filepath.Join(suiteDir, "README.md")
-        if _, err := os.Stat(readme); os.IsNotExist(err) {
-            content := fmt.Sprintf("# Eval Suite %s\n\nDescribe the eval suite here.\n", name)
-            if err := os.WriteFile(readme, []byte(content), 0o644); err != nil {
-                fmt.Fprintf(os.Stderr, "failed to write README: %v\n", err)
+
+        suiteFile := filepath.Join(suiteDir, "suite.yaml")
+        if _, err := os.Stat(suiteFile); os.IsNotExist(err) {
+            content := fmt.Sprintf("name: %s\n# description: Optional description\ntags: []\ncategories: []\nfixtures:\n# - fixtures/001.yaml\n", name)
+            if err := os.WriteFile(suiteFile, []byte(content), 0o644); err != nil {
+                fmt.Fprintf(os.Stderr, "failed to write suite manifest: %v\n", err)
                 os.Exit(1)
             }
         }
+
+        gitkeep := filepath.Join(fixturesDir, ".gitkeep")
+        if _, err := os.Stat(gitkeep); os.IsNotExist(err) {
+            if err := os.WriteFile(gitkeep, []byte(""), 0o644); err != nil {
+                fmt.Fprintf(os.Stderr, "failed to write fixtures placeholder: %v\n", err)
+                os.Exit(1)
+            }
+        }
+
         fmt.Printf("Initialized eval suite %s at %s\n", name, suiteDir)
     },
 }
