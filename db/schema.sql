@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS episodes (
     cost_cents INTEGER,
     score REAL,
     passed INTEGER NOT NULL CHECK (passed IN (0,1)),
-    error_msg TEXT
+    error_msg TEXT,
+    artifact_path TEXT
 );
 
 CREATE TABLE IF NOT EXISTS baselines (
