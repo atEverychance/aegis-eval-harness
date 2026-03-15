@@ -1,0 +1,6 @@
+name: "hello-world"
+input: "Hello, world!"
+expected: "Hello, world!"
+scorer_type: "exact"
+tags: ["example", "hello"]
+difficulty: "easy"
